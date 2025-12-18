@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Osaka Trip Plan 2026</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap');
+        
+        body { 
+            font-family: 'Kanit', sans-serif; 
+            background-color: #111; /* Darker background for contrast */
+            color: #1e293b;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Animations */
+        .page-enter { animation: pageEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .content-enter { opacity: 0; animation: fadeIn 0.4s ease-out 0.1s forwards; }
+
+        @keyframes pageEnter {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen py-10">
+    <div id="root" class="w-full h-full flex justify-center"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+        
+        // --- Custom Icons ---
+        const createIcon = (paths) => ({ className = "", size = 24, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>{paths}</svg>
+        );
+
+        const Icons = {
+            ArrowLeft: createIcon(<><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></>),
+            Plane: createIcon(<path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />),
+            Train: createIcon(<><rect x="4" y="3" width="16" height="16" rx="2" /><path d="M12 3v16" /><path d="M8 8h8" /><path d="M9 17l-3 4" /><path d="M15 17l3 4" /></>),
+            MapPin: createIcon(<><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></>),
+            Star: createIcon(<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />),
+            Coffee: createIcon(<><path d="M18 8h1a4 4 0 0 1 0 8h-1" /><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" /><line x1="6" y1="1" x2="6" y2="4" /><line x1="10" y1="1" x2="10" y2="4" /><line x1="14" y1="1" x2="14" y2="4" /></>),
+            Home: createIcon(<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>),
+            Camera: createIcon(<><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></>),
+            Bag: createIcon(<><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" /></>),
+            Ticket: createIcon(<><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></>),
+            Map: createIcon(<><polygon points="1 1 23 5 23 23 1 19 1 1" /><line x1="8" y1="2" x2="8" y2="20" /><line x1="16" y1="6" x2="16" y2="24" /></>),
+            Building: createIcon(<><rect x="4" y="2" width="16" height="20" rx="2" ry="2" /><line x1="9" y1="22" x2="9" y2="22.01" /><line x1="15" y1="22" x2="15" y2="22.01" /><line x1="9" y1="18" x2="9" y2="18.01" /><line x1="15" y1="18" x2="15" y2="18.01" /><line x1="9" y1="14" x2="9" y2="14.01" /><line x1="15" y1="14" x2="15" y2="14.01" /><line x1="9" y1="10" x2="9" y2="10.01" /><line x1="15" y1="10" x2="15" y2="10.01" /><line x1="9" y1="6" x2="9" y2="6.01" /><line x1="15" y1="6" x2="15" y2="6.01" /></>),
+            Fish: createIcon(<path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16z" />),
+            ShoppingBag: createIcon(<><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" /></>),
+            Lightbulb: createIcon(<><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.4 1.5-3.8 0-3.3-2.7-6-6-6 0 0-6 2.7-6 6 0 1.4.5 2.8 1.5 3.8.8.8 1.3 1.5 1.5 2.5" /><path d="M9 18h6" /><path d="M10 22h4" /></>),
+            Clipboard: createIcon(<><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><rect x="8" y="2" width="8" height="4" rx="1" ry="1" /></>),
+            CheckCircle: createIcon(<><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></>),
+            Circle: createIcon(<circle cx="12" cy="12" r="10" />)
+        };
+
+        // --- Data ---
+        const checklistData = [
+            {
+                category: "Documents & Money",
+                items: [
+                    { id: 'doc1', text: "Passport (อายุเหลือ > 6 เดือน)" },
+                    { id: 'doc2', text: "ลงทะเบียน Visit Japan Web (QR Code)" },
+                    { id: 'doc3', text: "เงินสด (Yen) & บัตรเครดิต" },
+                    { id: 'doc4', text: "บัตร Travel Card / ICOCA / Suica" },
+                    { id: 'doc5', text: "ประกันการเดินทาง" },
+                    { id: 'doc6', text: "ตั๋วเครื่องบิน & ใบจองโรงแรม" }
+                ]
+            },
+            {
+                category: "Clothing (Winter 2-10°C)",
+                items: [
+                    { id: 'clo1', text: "เสื้อ Heattech / ลองจอน" },
+                    { id: 'clo2', text: "เสื้อกันหนาว / Down Jacket กันลม" },
+                    { id: 'clo3', text: "ถุงมือ & ผ้าพันคอ" },
+                    { id: 'clo4', text: "รองเท้าผ้าใบที่เดินสบายที่สุด" },
+                    { id: 'clo5', text: "ถุงเท้าหนา (Walking Socks)" }
+                ]
+            },
+            {
+                category: "Gadgets & Essentials",
+                items: [
+                    { id: 'gad1', text: "Power Bank (จำเป็นมาก อากาศหนาวแบตหมดไว)" },
+                    { id: 'gad2', text: "SIM Card / Roaming Package" },
+                    { id: 'gad3', text: "Universal Adapter (ขาแบน Type A)" },
+                    { id: 'gad4', text: "ยาสามัญ / ยาแก้ปวด / พลาสเตอร์ยา" },
+                    { id: 'gad5', text: "ร่มพับ (เผื่อฝน/หิมะ)" }
+                ]
+            }
+        ];
+
+        const tripData = [
+            {
+                id: 1,
+                day: "Day 1",
+                date: "12 Feb",
+                title: "Arrival",
+                color: "bg-teal-50 text-teal-900 border-teal-200",
+                trick: "เตรียม Passport และ QR Visit Japan ไว้ให้หยิบง่ายที่สุด รองเท้าผ้าใบสำคัญมากเพราะต้องเดินเยอะตั้งแต่วันแรก!",
+                activities: [
+                    { time: "07:55", title: "Landing KIX", detail: "Terminal 1", sub: "Pass Immigration ~60m", icon: <Icons.Plane />, map: "Kansai International Airport" },
+                    { time: "10:00", title: "Train to Namba", detail: "Nankai Rapi:t", sub: "Seat Reserved • 1,290¥ (~300฿)", icon: <Icons.Train />, map: "Nankai Namba Station" },
+                    { time: "10:30", title: "Lockers @ Namba", detail: "2F/3F Station", sub: "Coin Locker • 700¥ (~160฿)", icon: <Icons.Bag />, map: "Namba Station Coin Lockers" },
+                    { time: "11:30", title: "Kuromon Market", detail: "Walk 10 min", sub: "Grilled Scallops, Tuna", icon: <Icons.Coffee />, map: "Kuromon Ichiba Market" },
+                    { time: "16:00", title: "Check-in Hotel", detail: "From Namba", sub: "~1,500¥ (~350฿) Taxi", icon: <Icons.Home />, map: "Namba Station" } 
+                ]
+            },
+            {
+                id: 2,
+                day: "Day 2",
+                date: "13 Feb",
+                title: "USJ",
+                color: "bg-red-50 text-red-900 border-red-200",
+                trick: "ลมแรงและหนาวมากบริเวณริมอ่าว เตรียมเสื้อกันลม/Heattech ให้พร้อม! และควรไปถึงก่อนเวลาเปิดจริงอย่างน้อย 1 ชม.",
+                activities: [
+                    { time: "07:30", title: "Go to USJ", detail: "JR Loop -> Sakurajima", sub: "180¥ (~40฿) • Universal City", icon: <Icons.Train />, map: "Universal City Station" },
+                    { time: "08:30", title: "Gate Open", detail: "Mario World First!", sub: "Timed Entry Req.", icon: <Icons.Star />, map: "Universal Studios Japan" },
+                    { time: "12:00", title: "Lunch", detail: "Kinopio's Cafe", sub: "Pizza Bowl ~2,500¥ (~580฿)", icon: <Icons.Coffee />, map: "Kinopio's Cafe" },
+                    { time: "18:00", title: "Harry Potter", detail: "Evening Vibes", sub: "Butterbeer (Non-Alc)", icon: <Icons.Camera />, map: "The Wizarding World of Harry Potter" }
+                ]
+            },
+            {
+                id: 3,
+                day: "Day 3",
+                date: "14 Feb",
+                title: "City View",
+                color: "bg-indigo-50 text-indigo-900 border-indigo-200",
+                trick: "Umeda Sky Building ช่วงพระอาทิตย์ตกสวยที่สุด แต่ลมข้างบนแรงมาก ระวังหมวกปลิว!",
+                activities: [
+                    { time: "09:30", title: "Osaka Castle", detail: "JR Osakajokoen", sub: "600¥ (~140฿) • Walk 15 min", icon: <Icons.Building />, map: "Osaka Castle" },
+                    { time: "12:30", title: "Umeda Lunch", detail: "Lucua / Grand Front", sub: "Rec: Gyukatsu ~1,800¥ (~420฿)", icon: <Icons.Coffee />, map: "LUCUA Osaka" },
+                    { time: "17:00", title: "Umeda Sky", detail: "Sunset View", sub: "1,500¥ (~350฿) • Windy", icon: <Icons.Camera />, map: "Umeda Sky Building" }
+                ]
+            },
+            {
+                id: 4,
+                day: "Day 4",
+                date: "15 Feb",
+                title: "Aquarium",
+                color: "bg-blue-50 text-blue-900 border-blue-200",
+                trick: "Kaiyukan ใช้เวลาเดิน 2-3 ชม. ควรทานข้าวก่อนเข้าชม ส่วน Shinsekai แนะนำไปช่วงค่ำจะได้แสงไฟสวยกว่ากลางวัน",
+                activities: [
+                    { time: "10:00", title: "Kaiyukan", detail: "Chuo Line -> Osakako", sub: "2,700¥ (~620฿) • Whale Shark", icon: <Icons.Fish />, map: "Osaka Aquarium Kaiyukan" },
+                    { time: "13:00", title: "Tempozan", detail: "Marketplace", sub: "Food Court", icon: <Icons.Coffee />, map: "Tempozan Marketplace" },
+                    { time: "16:00", title: "Shinsekai", detail: "Tsutenkaku Tower", sub: "Retro Photo Spot", icon: <Icons.Camera />, map: "Shinsekai" }
+                ]
+            },
+            {
+                id: 5,
+                day: "Day 5",
+                date: "16 Feb",
+                title: "Kyoto",
+                color: "bg-orange-50 text-orange-900 border-orange-200",
+                trick: "เกียวโตเดินเยอะที่สุดในทริป! Fushimi Inari ควรไปเช้าตรู่ (ก่อน 8 โมง) เพื่อเลี่ยงคนมหาศาลและได้รูปสวยๆ",
+                activities: [
+                    { time: "08:00", title: "Go to Kyoto", detail: "Keihan Line", sub: "420¥ (~100฿) • Yodoyabashi", icon: <Icons.Train />, map: "Yodoyabashi Station" },
+                    { time: "09:30", title: "Fushimi Inari", detail: "Red Torii Gates", sub: "Free • Hiking", icon: <Icons.MapPin />, map: "Fushimi Inari Taisha" },
+                    { time: "12:00", title: "Kiyomizu-dera", detail: "Bus 100/206", sub: "400¥ (~90฿) • Temple", icon: <Icons.Camera />, map: "Kiyomizu-dera" }
+                ]
+            },
+            {
+                id: 6,
+                day: "Day 6",
+                date: "17 Feb",
+                title: "Return",
+                color: "bg-gray-50 text-gray-900 border-gray-200",
+                trick: "เผื่อที่ว่างในกระเป๋าสำหรับ Outlet! และอย่าลืมเผื่อเวลาเดินทางไปสนามบินอย่างน้อย 3 ชม. (Terminal 2 ต้องนั่งรถบัสต่อ)",
+                activities: [
+                    { time: "10:00", title: "Check-out", detail: "Leave bags @ Namba", sub: "Last Shop Donki", icon: <Icons.Bag />, map: "Don Quijote Dotonbori" },
+                    { time: "14:00", title: "Rinku Outlet", detail: "Nankai Line", sub: "780¥ (~180฿) • Rinku Town", icon: <Icons.ShoppingBag />, map: "Rinku Premium Outlets" },
+                    { time: "16:30", title: "To Airport", detail: "Train / Shuttle Bus", sub: "~370¥ (~85฿) • Terminal 2", icon: <Icons.Plane />, map: "Kansai International Airport Terminal 2" }
+                ]
+            }
+        ];
+
+        const App = () => {
+            const [view, setView] = useState('home'); // 'home', 'detail', 'checklist'
+            const [selectedDay, setSelectedDay] = useState(null);
+            const [checkedItems, setCheckedItems] = useState({});
+
+            const openDay = (index) => {
+                setSelectedDay(tripData[index]);
+                setView('detail');
+            };
+
+            const goHome = () => {
+                setView('home');
+                setTimeout(() => setSelectedDay(null), 300);
+            };
+
+            const toggleCheck = (id) => {
+                setCheckedItems(prev => ({ ...prev, [id]: !prev[id] }));
+            };
+
+            const openMap = (query, e) => {
+                e.stopPropagation();
+                window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query + " Osaka")}`, '_blank');
+            };
+
+            return (
+                // Fixed Dimensions: 402px x 874px (approx iPhone 16 Pro logic size)
+                <div 
+                    className="relative w-full h-full md:w-[402px] md:h-[874px] md:flex-shrink-0 bg-white md:rounded-[55px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] border-[8px] border-gray-800 overflow-hidden flex flex-col font-kanit text-slate-800 box-border"
+                >
+                    
+                    {/* Compact Status Bar */}
+                    <div className="absolute top-0 w-full h-11 flex justify-between items-end px-6 pb-2 z-30 text-[10px] font-medium text-gray-400 bg-white/95 backdrop-blur-sm border-b border-gray-50 select-none cursor-default">
+                        <span>10:17</span>
+                        {/* Dynamic Island Mockup */}
+                        <div className="absolute left-1/2 transform -translate-x-1/2 bottom-2 w-20 h-6 bg-black rounded-full pointer-events-none"></div>
+                        <div className="flex gap-1 opacity-40"><div className="w-3 h-3 bg-black rounded-full"></div><div className="w-3 h-3 bg-black rounded-full"></div></div>
+                    </div>
+
+                    {/* --- HOME VIEW --- */}
+                    {view === 'home' && (
+                        <div className="page-enter flex-grow overflow-y-auto pt-14 pb-8 px-5 no-scrollbar">
+                            
+                            {/* Header - Compact */}
+                            <div className="mb-5 flex justify-between items-end">
+                                <div>
+                                    <h1 className="text-2xl font-bold text-gray-900 leading-none mb-1">Osaka Trip</h1>
+                                    <p className="text-xs text-gray-400 font-light">6 Days • Feb 2026</p>
+                                </div>
+                                <div className="bg-gray-100 px-2.5 py-1.5 rounded-lg">
+                                    <span className="text-[10px] text-gray-500 font-mono font-bold">12-17 FEB</span>
+                                </div>
+                            </div>
+
+                            {/* Prep Card - Clickable */}
+                            <button 
+                                onClick={() => setView('checklist')}
+                                className="w-full text-left bg-slate-900 text-white p-4 rounded-3xl mb-6 shadow-lg relative overflow-hidden transition-transform active:scale-95 group"
+                            >
+                                <div className="relative z-10 flex justify-between items-center">
+                                    <div className="flex items-center gap-3">
+                                        <div className="bg-white/20 p-2 rounded-xl group-hover:bg-white/30 transition-colors"><Icons.Clipboard size={18}/></div>
+                                        <div>
+                                            <div className="opacity-60 text-[10px] tracking-wider mb-0.5">PREPARATION</div>
+                                            <div className="font-medium text-sm flex items-center gap-1">Checklist <Icons.ArrowLeft size={10} className="rotate-180 opacity-50"/></div>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="opacity-60 text-[10px] tracking-wider mb-0.5">WEATHER</div>
+                                        <div className="font-bold text-teal-300 text-sm">2°C - 10°C</div>
+                                    </div>
+                                </div>
+                            </button>
+
+                            {/* Days Grid - Compact */}
+                            <div className="grid grid-cols-2 gap-3">
+                                {tripData.map((item, idx) => (
+                                    <button 
+                                        key={item.id}
+                                        onClick={() => openDay(idx)}
+                                        className={`p-3.5 rounded-2xl text-left transition-all active:scale-95 border shadow-sm ${item.color} hover:brightness-95 group`}
+                                    >
+                                        <div className="flex justify-between items-start mb-2">
+                                            <span className="text-[10px] font-bold opacity-60 uppercase tracking-wide group-hover:opacity-100 transition-opacity">{item.day}</span>
+                                            <span className="text-[10px] font-bold bg-white/60 px-1.5 py-0.5 rounded-md backdrop-blur-sm">{item.date}</span>
+                                        </div>
+                                        <div className="font-bold text-lg leading-tight mb-1">{item.title}</div>
+                                        <div className="flex items-center gap-1 opacity-70 text-[10px]">
+                                            {item.activities.length} Activities <Icons.ArrowLeft size={10} className="rotate-180"/>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* --- CHECKLIST VIEW --- */}
+                    {view === 'checklist' && (
+                        <div className="page-enter flex flex-col h-full bg-slate-50">
+                            {/* Nav */}
+                            <div className="pt-12 pb-3 px-4 flex items-center justify-between bg-white/80 backdrop-blur-md shadow-sm z-20 border-b border-gray-100">
+                                <button onClick={goHome} className="p-2 -ml-1 rounded-full hover:bg-gray-100 text-slate-700 active:bg-gray-200 transition-colors">
+                                    <Icons.ArrowLeft size={22} />
+                                </button>
+                                <span className="font-bold text-sm text-slate-800 uppercase tracking-wide">Preparation Checklist</span>
+                                <div className="w-9"></div> 
+                            </div>
+
+                            <div className="flex-grow overflow-y-auto px-5 py-5 content-enter no-scrollbar">
+                                <div className="space-y-6">
+                                    {checklistData.map((cat, idx) => (
+                                        <div key={idx}>
+                                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">{cat.category}</h3>
+                                            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                                                {cat.items.map((item, itemIdx) => (
+                                                    <button 
+                                                        key={item.id}
+                                                        onClick={() => toggleCheck(item.id)}
+                                                        className={`w-full text-left p-3.5 flex items-center gap-3 transition-colors ${itemIdx !== cat.items.length - 1 ? 'border-b border-gray-100' : ''} hover:bg-gray-50 active:bg-gray-100`}
+                                                    >
+                                                        <div className={`shrink-0 transition-colors ${checkedItems[item.id] ? 'text-green-500' : 'text-gray-300'}`}>
+                                                            {checkedItems[item.id] ? <Icons.CheckCircle size={20} fill="currentColor" className="text-green-100" /> : <Icons.Circle size={20} />}
+                                                        </div>
+                                                        <span className={`text-sm font-medium ${checkedItems[item.id] ? 'text-gray-400 line-through' : 'text-slate-700'}`}>
+                                                            {item.text}
+                                                        </span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* --- DETAIL VIEW --- */}
+                    {view === 'detail' && selectedDay && (
+                        <div className="page-enter flex flex-col h-full bg-slate-50">
+                            
+                            {/* Nav - Compact */}
+                            <div className="pt-12 pb-3 px-4 flex items-center justify-between bg-white/80 backdrop-blur-md shadow-sm z-20 border-b border-gray-100">
+                                <button onClick={goHome} className="p-2 -ml-1 rounded-full hover:bg-gray-100 text-slate-700 active:bg-gray-200 transition-colors">
+                                    <Icons.ArrowLeft size={22} />
+                                </button>
+                                <span className="font-bold text-sm text-slate-800 uppercase tracking-wide">{selectedDay.day} • {selectedDay.title}</span>
+                                <div className="w-9"></div> 
+                            </div>
+
+                            {/* Content - Compact */}
+                            <div className="flex-grow overflow-y-auto px-5 py-5 content-enter no-scrollbar">
+                                
+                                {/* Trip Trick Box */}
+                                {selectedDay.trick && (
+                                    <div className="bg-amber-50 border border-amber-100 rounded-2xl p-3.5 mb-6 flex items-start gap-3 shadow-sm">
+                                        <div className="bg-amber-100 p-1.5 rounded-full text-amber-500 mt-0.5 shrink-0">
+                                            <Icons.Lightbulb size={16} />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-[10px] font-extrabold text-amber-800 uppercase tracking-widest mb-1">Trip Trick</h4>
+                                            <p className="text-xs text-amber-900/80 font-medium leading-relaxed">{selectedDay.trick}</p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Timeline */}
+                                <div className="space-y-4 border-l-[2px] border-gray-200 ml-2.5 pl-7 pb-10">
+                                    {selectedDay.activities.map((act, i) => (
+                                        <div key={i} className="relative group">
+                                            {/* Icon Dot */}
+                                            <div className="absolute -left-[37px] top-0 bg-white border-2 border-indigo-500 text-indigo-500 p-1 rounded-full shadow-sm z-10 group-hover:scale-110 transition-transform">
+                                                {React.cloneElement(act.icon, { size: 14 })}
+                                            </div>
+                                            
+                                            {/* Card */}
+                                            <div className="bg-white p-3.5 rounded-2xl shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] border border-gray-100 flex justify-between items-start gap-3 active:scale-[0.98] transition-transform">
+                                                <div className="flex-grow min-w-0">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className="text-[10px] font-mono text-indigo-600 font-bold bg-indigo-50 px-1.5 py-0.5 rounded">{act.time}</span>
+                                                        <h3 className="font-bold text-sm text-gray-900 truncate">{act.title}</h3>
+                                                    </div>
+                                                    <div className="text-xs text-gray-700 font-medium leading-snug mb-0.5">{act.detail}</div>
+                                                    <div className="text-[10px] text-gray-400 mt-0.5 truncate">
+                                                        {act.sub}
+                                                    </div>
+                                                </div>
+                                                
+                                                {/* Map Button */}
+                                                <button 
+                                                    onClick={(e) => openMap(act.map, e)}
+                                                    className="flex-shrink-0 bg-blue-50 text-blue-600 p-2.5 rounded-xl hover:bg-blue-100 active:bg-blue-200 transition-colors"
+                                                >
+                                                    <Icons.Map size={18} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Home Indicator */}
+                    <div className="absolute bottom-1.5 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-black/20 rounded-full z-40"></div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
