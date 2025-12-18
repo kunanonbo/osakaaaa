@@ -9,39 +9,33 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
         
         body { 
             font-family: 'Kanit', sans-serif; 
-            background-color: #111; /* Darker background for contrast */
+            background-color: #f1f5f9;
             color: #1e293b;
             margin: 0;
             padding: 0;
-            overflow-x: hidden;
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
         /* Animations */
-        .page-enter { animation: pageEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .content-enter { opacity: 0; animation: fadeIn 0.4s ease-out 0.1s forwards; }
-
+        .page-enter { animation: pageEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
         @keyframes pageEnter {
-            from { opacity: 0; transform: scale(0.98); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen py-10">
-    <div id="root" class="w-full h-full flex justify-center"></div>
+<body class="bg-gray-100 min-h-screen flex justify-center">
+    <div id="root" class="w-full max-w-md bg-white shadow-xl min-h-screen flex flex-col relative"></div>
 
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useEffect } = React;
         
         // --- Custom Icons ---
         const createIcon = (paths) => ({ className = "", size = 24, ...props }) => (
@@ -69,7 +63,6 @@
             Circle: createIcon(<circle cx="12" cy="12" r="10" />)
         };
 
-        // --- Data ---
         const checklistData = [
             {
                 category: "Documents & Money",
@@ -95,7 +88,7 @@
             {
                 category: "Gadgets & Essentials",
                 items: [
-                    { id: 'gad1', text: "Power Bank (จำเป็นมาก อากาศหนาวแบตหมดไว)" },
+                    { id: 'gad1', text: "Power Bank (จำเป็นมาก)" },
                     { id: 'gad2', text: "SIM Card / Roaming Package" },
                     { id: 'gad3', text: "Universal Adapter (ขาแบน Type A)" },
                     { id: 'gad4', text: "ยาสามัญ / ยาแก้ปวด / พลาสเตอร์ยา" },
@@ -109,97 +102,102 @@
                 id: 1,
                 day: "Day 1",
                 date: "12 Feb",
-                title: "Arrival",
+                title: "Arrival & City Walk",
                 color: "bg-teal-50 text-teal-900 border-teal-200",
-                trick: "เตรียม Passport และ QR Visit Japan ไว้ให้หยิบง่ายที่สุด รองเท้าผ้าใบสำคัญมากเพราะต้องเดินเยอะตั้งแต่วันแรก!",
+                trick: "ร้าน Matsusakagyu M ต้องจองล่วงหน้า! ถ้าเต็ม แนะนำ Yakiniku Rikimaru (บุฟเฟต์) แทนครับ",
                 activities: [
-                    { time: "07:55", title: "Landing KIX", detail: "Terminal 1", sub: "Pass Immigration ~60m", icon: <Icons.Plane />, map: "Kansai International Airport" },
-                    { time: "10:00", title: "Train to Namba", detail: "Nankai Rapi:t", sub: "Seat Reserved • 1,290¥ (~300฿)", icon: <Icons.Train />, map: "Nankai Namba Station" },
-                    { time: "10:30", title: "Lockers @ Namba", detail: "2F/3F Station", sub: "Coin Locker • 700¥ (~160฿)", icon: <Icons.Bag />, map: "Namba Station Coin Lockers" },
-                    { time: "11:30", title: "Kuromon Market", detail: "Walk 10 min", sub: "Grilled Scallops, Tuna", icon: <Icons.Coffee />, map: "Kuromon Ichiba Market" },
-                    { time: "16:00", title: "Check-in Hotel", detail: "From Namba", sub: "~1,500¥ (~350฿) Taxi", icon: <Icons.Home />, map: "Namba Station" } 
+                    { time: "07:55", title: "Landing KIX", detail: "Terminal 1", sub: "Pass Immigration ~60m", icon: <Icons.Plane />, map: "Kansai International Airport", image: "https://arquitecturaviva.com/assets/uploads/obras/46025/av_imagen.webp" },
+                    { time: "10:00", title: "Train to Namba", detail: "Nankai Rapi:t", sub: "Seat Reserved • 1,290¥ (~300฿)", icon: <Icons.Train />, map: "Nankai Namba Station", image: "https://www.howto-osaka.com/en/wp/wp-content/themes/findOsaka/assets/images/about/rapit_outlineimg01.jpg" },
+                    { time: "11:30", title: "Kuromon Market", detail: "Walk 10 min", sub: "Grilled Scallops, Tuna", icon: <Icons.Coffee />, map: "Kuromon Ichiba Market", isFood: true, image: "https://article-image.travel.navitime.jp/img/NTJtrv1084-en/NTJtrv1084-en_kuromon_market_0.jpg" },
+                    { time: "16:00", title: "Check-in Hotel", detail: "From Namba", sub: "~1,500¥ (~350฿) Taxi", icon: <Icons.Home />, map: "Namba Station", image: "https://a0.muscache.com/im/pictures/hosting/Hosting-1501306803689153534/original/0ed8ab1d-929f-48d2-90e3-56866e1a8a68.jpeg?im_w=1200" },
+                    { time: "19:00", title: "Matsusakagyu M", detail: "Hozenji Yokocho", sub: "Premium Matsusaka Beef 🥩", icon: <Icons.Star />, map: "Matsusakagyu Yakiniku M Hozenji Yokocho", isFood: true, image: "https://visitgayosaka.com/content/images/Restaurant/Matsusakagyu_Yakiniku_M_Fukushima/3.jpg" }
                 ]
             },
             {
                 id: 2,
                 day: "Day 2",
                 date: "13 Feb",
-                title: "USJ",
+                title: "Universal Studios",
                 color: "bg-red-50 text-red-900 border-red-200",
-                trick: "ลมแรงและหนาวมากบริเวณริมอ่าว เตรียมเสื้อกันลม/Heattech ให้พร้อม! และควรไปถึงก่อนเวลาเปิดจริงอย่างน้อย 1 ชม.",
+                trick: "ลมแรงและหนาวมาก! เตรียมเสื้อกันลม/Heattech ให้พร้อม! ควรไปถึงก่อน 7:30 น.",
                 activities: [
-                    { time: "07:30", title: "Go to USJ", detail: "JR Loop -> Sakurajima", sub: "180¥ (~40฿) • Universal City", icon: <Icons.Train />, map: "Universal City Station" },
-                    { time: "08:30", title: "Gate Open", detail: "Mario World First!", sub: "Timed Entry Req.", icon: <Icons.Star />, map: "Universal Studios Japan" },
-                    { time: "12:00", title: "Lunch", detail: "Kinopio's Cafe", sub: "Pizza Bowl ~2,500¥ (~580฿)", icon: <Icons.Coffee />, map: "Kinopio's Cafe" },
-                    { time: "18:00", title: "Harry Potter", detail: "Evening Vibes", sub: "Butterbeer (Non-Alc)", icon: <Icons.Camera />, map: "The Wizarding World of Harry Potter" }
+                    { time: "07:30", title: "Go to USJ", detail: "JR Loop -> Sakurajima", sub: "180¥ (~40฿) • Universal City", icon: <Icons.Train />, map: "Universal City Station", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Universal_City_Station_20160822.jpg/640px-Universal_City_Station_20160822.jpg" },
+                    { time: "08:30", title: "Gate Open!", detail: "Mario World First!", sub: "Timed Entry Req.", icon: <Icons.Star />, map: "Universal Studios Japan", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Universal_Studios_Globe.jpg/640px-Universal_Studios_Globe.jpg" },
+                    { time: "12:00", title: "Lunch", detail: "Kinopio's Cafe", sub: "Pizza Bowl ~2,500¥ (~580฿)", icon: <Icons.Coffee />, map: "Kinopio's Cafe", isFood: true, image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Super_Nintendo_World_Japan_Entrance.jpg/640px-Super_Nintendo_World_Japan_Entrance.jpg" },
+                    { time: "18:00", title: "Harry Potter", detail: "Evening Vibes", sub: "Butterbeer (Non-Alc)", icon: <Icons.Camera />, map: "The Wizarding World of Harry Potter", isFood: true, image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Hogwarts_Castle_at_Universal_Studios_Japan.jpg/640px-Hogwarts_Castle_at_Universal_Studios_Japan.jpg" }
                 ]
             },
             {
                 id: 3,
                 day: "Day 3",
                 date: "14 Feb",
-                title: "City View",
+                title: "Osaka History",
                 color: "bg-indigo-50 text-indigo-900 border-indigo-200",
-                trick: "Umeda Sky Building ช่วงพระอาทิตย์ตกสวยที่สุด แต่ลมข้างบนแรงมาก ระวังหมวกปลิว!",
+                trick: "Aburiya Umeda เป็นบุฟเฟต์เนื้อย่างวิวสวย คิวยาวมาก ต้องจองล่วงหน้า 1 เดือน!",
                 activities: [
-                    { time: "09:30", title: "Osaka Castle", detail: "JR Osakajokoen", sub: "600¥ (~140฿) • Walk 15 min", icon: <Icons.Building />, map: "Osaka Castle" },
-                    { time: "12:30", title: "Umeda Lunch", detail: "Lucua / Grand Front", sub: "Rec: Gyukatsu ~1,800¥ (~420฿)", icon: <Icons.Coffee />, map: "LUCUA Osaka" },
-                    { time: "17:00", title: "Umeda Sky", detail: "Sunset View", sub: "1,500¥ (~350฿) • Windy", icon: <Icons.Camera />, map: "Umeda Sky Building" }
+                    { time: "09:30", title: "Osaka Castle", detail: "JR Osakajokoen", sub: "600¥ (~140฿) • Walk 15 min", icon: <Icons.Building />, map: "Osaka Castle", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Osaka_Castle_02bs3200.jpg/640px-Osaka_Castle_02bs3200.jpg" },
+                    { time: "12:30", title: "Umeda Lunch", detail: "Lucua / Grand Front", sub: "Rec: Gyukatsu Motomura", icon: <Icons.Coffee />, map: "Gyukatsu Motomura Umeda", isFood: true, image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Beef_cutlet.jpg/640px-Beef_cutlet.jpg" },
+                    { time: "17:00", title: "Umeda Sky", detail: "Sunset View", sub: "1,500¥ (~350฿) • Windy", icon: <Icons.Camera />, map: "Umeda Sky Building", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Umeda-Sky-Building%2COsaka-Japan.JPG/640px-Umeda-Sky-Building%2COsaka-Japan.JPG" },
+                    { time: "19:00", title: "Aburiya Umeda", detail: "Yakiniku Buffet", sub: "High Quality AYCE 🥘", icon: <Icons.Star />, map: "Aburiya Umeda", isFood: true, image: "https://placehold.co/600x400/e2e8f0/1e293b?text=Aburiya+Buffet" }
                 ]
             },
             {
                 id: 4,
                 day: "Day 4",
                 date: "15 Feb",
-                title: "Aquarium",
+                title: "Aquarium & Retro",
                 color: "bg-blue-50 text-blue-900 border-blue-200",
-                trick: "Kaiyukan ใช้เวลาเดิน 2-3 ชม. ควรทานข้าวก่อนเข้าชม ส่วน Shinsekai แนะนำไปช่วงค่ำจะได้แสงไฟสวยกว่ากลางวัน",
+                trick: "Daruma ห้ามจิ้มน้ำจิ้มสองครั้ง (กฎเหล็ก!) Shinsekai ช่วงค่ำถ่ายรูปสวยมาก",
                 activities: [
-                    { time: "10:00", title: "Kaiyukan", detail: "Chuo Line -> Osakako", sub: "2,700¥ (~620฿) • Whale Shark", icon: <Icons.Fish />, map: "Osaka Aquarium Kaiyukan" },
-                    { time: "13:00", title: "Tempozan", detail: "Marketplace", sub: "Food Court", icon: <Icons.Coffee />, map: "Tempozan Marketplace" },
-                    { time: "16:00", title: "Shinsekai", detail: "Tsutenkaku Tower", sub: "Retro Photo Spot", icon: <Icons.Camera />, map: "Shinsekai" }
+                    { time: "10:00", title: "Kaiyukan", detail: "Chuo Line -> Osakako", sub: "2,700¥ (~620฿) • Whale Shark", icon: <Icons.Fish />, map: "Osaka Aquarium Kaiyukan", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Whale_Shark_-_Osaka_Aquarium.jpg/640px-Whale_Shark_-_Osaka_Aquarium.jpg" },
+                    { time: "13:00", title: "Tempozan", detail: "Marketplace", sub: "Food Court", icon: <Icons.Coffee />, map: "Tempozan Marketplace", isFood: true, image: "https://placehold.co/600x400/e2e8f0/1e293b?text=Tempozan" },
+                    { time: "16:00", title: "Shinsekai", detail: "Tsutenkaku Tower", sub: "Retro Photo Spot", icon: <Icons.Camera />, map: "Shinsekai", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Shinsekai_e_tsutenkaku.JPG/640px-Shinsekai_e_tsutenkaku.JPG" },
+                    { time: "18:00", title: "Kushikatsu Daruma", detail: "Shinsekai Original", sub: "Famous Fried Skewers 🍢", icon: <Icons.Star />, map: "Kushikatsu Daruma Shinsekai", isFood: true, image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Kushikatsu_001.jpg/640px-Kushikatsu_001.jpg" }
                 ]
             },
             {
                 id: 5,
                 day: "Day 5",
                 date: "16 Feb",
-                title: "Kyoto",
+                title: "Kyoto Day Trip",
                 color: "bg-orange-50 text-orange-900 border-orange-200",
-                trick: "เกียวโตเดินเยอะที่สุดในทริป!! Fushimi Inari ควรไปเช้าตรู่ (ก่อน 8 โมง) เพื่อเลี่ยงคนมหาศาลและได้รูปสวยๆ",
+                trick: "เกียวโตเดินเยอะที่สุด! Fushimi Inari ควรไปเช้าตรู่ (ก่อน 8 โมง) เพื่อเลี่ยงคน",
                 activities: [
                     { time: "08:00", title: "Go to Kyoto", detail: "Keihan Line", sub: "420¥ (~100฿) • Yodoyabashi", icon: <Icons.Train />, map: "Yodoyabashi Station" },
-                    { time: "09:30", title: "Fushimi Inari", detail: "Red Torii Gates", sub: "Free • Hiking", icon: <Icons.MapPin />, map: "Fushimi Inari Taisha" },
-                    { time: "12:00", title: "Kiyomizu-dera", detail: "Bus 100/206", sub: "400¥ (~90฿) • Temple", icon: <Icons.Camera />, map: "Kiyomizu-dera" }
+                    { time: "09:30", title: "Fushimi Inari", detail: "Red Torii Gates", sub: "Free • Hiking", icon: <Icons.MapPin />, map: "Fushimi Inari Taisha", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/KyotoFushimiInariLarge.jpg/640px-KyotoFushimiInariLarge.jpg" },
+                    { time: "12:00", title: "Kiyomizu-dera", detail: "Bus 100/206", sub: "400¥ (~90฿) • Temple", icon: <Icons.Camera />, map: "Kiyomizu-dera", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Kyoto_Kiyomizu-Dera.jpg/640px-Kyoto_Kiyomizu-Dera.jpg" },
+                    { time: "19:00", title: "Yakiniku Hiro", detail: "Kyoto Style BBQ", sub: "Famous Local Chain 🥩", icon: <Icons.Star />, map: "Yakiniku Hiro Kyoto Station", isFood: true, image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Yakiniku_001.jpg/640px-Yakiniku_001.jpg" }
                 ]
             },
             {
                 id: 6,
                 day: "Day 6",
                 date: "17 Feb",
-                title: "Return",
+                title: "Shopping & Fly",
                 color: "bg-gray-50 text-gray-900 border-gray-200",
-                trick: "เผื่อที่ว่างในกระเป๋าสำหรับ Outlet! และอย่าลืมเผื่อเวลาเดินทางไปสนามบินอย่างน้อย 3 ชม. (Terminal 2 ต้องนั่งรถบัสต่อ)",
+                trick: "เผื่อเวลาเดินทางไปสนามบินอย่างน้อย 3 ชม. (Terminal 2 ไกล)",
                 activities: [
                     { time: "10:00", title: "Check-out", detail: "Leave bags @ Namba", sub: "Last Shop Donki", icon: <Icons.Bag />, map: "Don Quijote Dotonbori" },
-                    { time: "14:00", title: "Rinku Outlet", detail: "Nankai Line", sub: "780¥ (~180฿) • Rinku Town", icon: <Icons.ShoppingBag />, map: "Rinku Premium Outlets" },
-                    { time: "16:30", title: "To Airport", detail: "Train / Shuttle Bus", sub: "~370¥ (~85฿) • Terminal 2", icon: <Icons.Plane />, map: "Kansai International Airport Terminal 2" }
+                    { time: "14:00", title: "Rinku Outlet", detail: "Nankai Line", sub: "780¥ (~180฿) • Rinku Town", icon: <Icons.ShoppingBag />, map: "Rinku Premium Outlets", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Rinku_Premium_Outlet_%2835669222573%29.jpg/640px-Rinku_Premium_Outlet_%2835669222573%29.jpg" },
+                    { time: "16:30", title: "To Airport", detail: "Train / Shuttle Bus", sub: "~370¥ (~85฿) • Terminal 2", icon: <Icons.Plane />, map: "Kansai International Airport Terminal 2", image: "https://placehold.co/600x400/e2e8f0/1e293b?text=KIX+Airport" }
                 ]
             }
         ];
 
         const App = () => {
-            const [view, setView] = useState('home'); // 'home', 'detail', 'checklist'
+            const [view, setView] = useState('home'); 
             const [selectedDay, setSelectedDay] = useState(null);
             const [checkedItems, setCheckedItems] = useState({});
 
             const openDay = (index) => {
                 setSelectedDay(tripData[index]);
                 setView('detail');
+                window.scrollTo(0, 0); // BUG FIX: Reset scroll position
             };
 
             const goHome = () => {
                 setView('home');
+                window.scrollTo(0, 0); // BUG FIX: Reset scroll position
                 setTimeout(() => setSelectedDay(null), 300);
             };
 
@@ -212,46 +210,42 @@
                 window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query + " Osaka")}`, '_blank');
             };
 
-            return (
-                // Fixed Dimensions: 402px x 874px (approx iPhone 16 Pro logic size)
-                <div 
-                    className="relative w-full h-full md:w-[402px] md:h-[874px] md:flex-shrink-0 bg-white md:rounded-[55px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] border-[8px] border-gray-800 overflow-hidden flex flex-col font-kanit text-slate-800 box-border"
-                >
-                    
-                    {/* Compact Status Bar */}
-                    <div className="absolute top-0 w-full h-11 flex justify-between items-end px-6 pb-2 z-30 text-[10px] font-medium text-gray-400 bg-white/95 backdrop-blur-sm border-b border-gray-50 select-none cursor-default">
-                        <span>10:17</span>
-                        {/* Dynamic Island Mockup */}
-                        <div className="absolute left-1/2 transform -translate-x-1/2 bottom-2 w-20 h-6 bg-black rounded-full pointer-events-none"></div>
-                        <div className="flex gap-1 opacity-40"><div className="w-3 h-3 bg-black rounded-full"></div><div className="w-3 h-3 bg-black rounded-full"></div></div>
-                    </div>
+            const handleImageError = (e) => {
+                e.target.src = "https://placehold.co/600x400/e2e8f0/94a3b8?text=Image+Unavailable";
+            };
 
+            return (
+                <div className="w-full max-w-md mx-auto bg-white shadow-xl min-h-screen flex flex-col font-kanit text-slate-800">
+                    
                     {/* --- HOME VIEW --- */}
                     {view === 'home' && (
-                        <div className="page-enter flex-grow overflow-y-auto pt-14 pb-8 px-5 no-scrollbar">
+                        <div className="page-enter flex-grow pb-8 px-5">
                             
-                            {/* Header - Compact */}
-                            <div className="mb-5 flex justify-between items-end">
+                            {/* Header */}
+                            <div className="pt-10 mb-6 flex justify-between items-end">
                                 <div>
-                                    <h1 className="text-2xl font-bold text-gray-900 leading-none mb-1">Osaka Trip</h1>
-                                    <p className="text-xs text-gray-400 font-light">6 Days • Feb 2026</p>
+                                    <h1 className="text-3xl font-bold text-gray-900 leading-none mb-1">Osaka Trip</h1>
+                                    <p className="text-sm text-gray-500 font-light">6 Days • Feb 2026</p>
                                 </div>
                                 <div className="bg-gray-100 px-2.5 py-1.5 rounded-lg">
-                                    <span className="text-[10px] text-gray-500 font-mono font-bold">12-17 FEB</span>
+                                    <span className="text-xs text-gray-500 font-mono font-bold">12-17 FEB</span>
                                 </div>
                             </div>
 
-                            {/* Prep Card - Clickable */}
+                            {/* Prep Card */}
                             <button 
-                                onClick={() => setView('checklist')}
+                                onClick={() => {
+                                    setView('checklist');
+                                    window.scrollTo(0,0);
+                                }}
                                 className="w-full text-left bg-slate-900 text-white p-4 rounded-3xl mb-6 shadow-lg relative overflow-hidden transition-transform active:scale-95 group"
                             >
                                 <div className="relative z-10 flex justify-between items-center">
                                     <div className="flex items-center gap-3">
-                                        <div className="bg-white/20 p-2 rounded-xl group-hover:bg-white/30 transition-colors"><Icons.Clipboard size={18}/></div>
+                                        <div className="bg-white/20 p-2 rounded-xl group-hover:bg-white/30 transition-colors"><Icons.Clipboard size={20}/></div>
                                         <div>
                                             <div className="opacity-60 text-[10px] tracking-wider mb-0.5">PREPARATION</div>
-                                            <div className="font-medium text-sm flex items-center gap-1">Checklist <Icons.ArrowLeft size={10} className="rotate-180 opacity-50"/></div>
+                                            <div className="font-medium text-sm flex items-center gap-1">Checklist <Icons.ArrowLeft size={12} className="rotate-180 opacity-50"/></div>
                                         </div>
                                     </div>
                                     <div className="text-right">
@@ -261,19 +255,19 @@
                                 </div>
                             </button>
 
-                            {/* Days Grid - Compact */}
+                            {/* Days Grid */}
                             <div className="grid grid-cols-2 gap-3">
                                 {tripData.map((item, idx) => (
                                     <button 
                                         key={item.id}
                                         onClick={() => openDay(idx)}
-                                        className={`p-3.5 rounded-2xl text-left transition-all active:scale-95 border shadow-sm ${item.color} hover:brightness-95 group`}
+                                        className={`p-4 rounded-2xl text-left transition-all active:scale-95 border shadow-sm ${item.color} hover:brightness-95 group`}
                                     >
-                                        <div className="flex justify-between items-start mb-2">
+                                        <div className="flex justify-between items-start mb-3">
                                             <span className="text-[10px] font-bold opacity-60 uppercase tracking-wide group-hover:opacity-100 transition-opacity">{item.day}</span>
                                             <span className="text-[10px] font-bold bg-white/60 px-1.5 py-0.5 rounded-md backdrop-blur-sm">{item.date}</span>
                                         </div>
-                                        <div className="font-bold text-lg leading-tight mb-1">{item.title}</div>
+                                        <div className="font-bold text-lg leading-tight mb-2">{item.title}</div>
                                         <div className="flex items-center gap-1 opacity-70 text-[10px]">
                                             {item.activities.length} Activities <Icons.ArrowLeft size={10} className="rotate-180"/>
                                         </div>
@@ -285,17 +279,17 @@
 
                     {/* --- CHECKLIST VIEW --- */}
                     {view === 'checklist' && (
-                        <div className="page-enter flex flex-col h-full bg-slate-50">
-                            {/* Nav */}
-                            <div className="pt-12 pb-3 px-4 flex items-center justify-between bg-white/80 backdrop-blur-md shadow-sm z-20 border-b border-gray-100">
+                        <div className="page-enter flex flex-col min-h-screen bg-slate-50">
+                            {/* Sticky Nav */}
+                            <div className="sticky top-0 pt-8 pb-3 px-4 flex items-center justify-between bg-white/80 backdrop-blur-md shadow-sm z-30 border-b border-gray-100">
                                 <button onClick={goHome} className="p-2 -ml-1 rounded-full hover:bg-gray-100 text-slate-700 active:bg-gray-200 transition-colors">
                                     <Icons.ArrowLeft size={22} />
                                 </button>
-                                <span className="font-bold text-sm text-slate-800 uppercase tracking-wide">Preparation Checklist</span>
+                                <span className="font-bold text-sm text-slate-800 uppercase tracking-wide">Checklist</span>
                                 <div className="w-9"></div> 
                             </div>
 
-                            <div className="flex-grow overflow-y-auto px-5 py-5 content-enter no-scrollbar">
+                            <div className="flex-grow px-5 py-5">
                                 <div className="space-y-6">
                                     {checklistData.map((cat, idx) => (
                                         <div key={idx}>
@@ -308,7 +302,7 @@
                                                         className={`w-full text-left p-3.5 flex items-center gap-3 transition-colors ${itemIdx !== cat.items.length - 1 ? 'border-b border-gray-100' : ''} hover:bg-gray-50 active:bg-gray-100`}
                                                     >
                                                         <div className={`shrink-0 transition-colors ${checkedItems[item.id] ? 'text-green-500' : 'text-gray-300'}`}>
-                                                            {checkedItems[item.id] ? <Icons.CheckCircle size={20} fill="currentColor" className="text-green-100" /> : <Icons.Circle size={20} />}
+                                                            {checkedItems[item.id] ? <Icons.CheckCircle size={22} fill="currentColor" className="text-green-100" /> : <Icons.Circle size={22} />}
                                                         </div>
                                                         <span className={`text-sm font-medium ${checkedItems[item.id] ? 'text-gray-400 line-through' : 'text-slate-700'}`}>
                                                             {item.text}
@@ -325,62 +319,78 @@
 
                     {/* --- DETAIL VIEW --- */}
                     {view === 'detail' && selectedDay && (
-                        <div className="page-enter flex flex-col h-full bg-slate-50">
+                        <div className="page-enter flex flex-col min-h-screen bg-slate-50">
                             
-                            {/* Nav - Compact */}
-                            <div className="pt-12 pb-3 px-4 flex items-center justify-between bg-white/80 backdrop-blur-md shadow-sm z-20 border-b border-gray-100">
+                            {/* Sticky Nav */}
+                            <div className="sticky top-0 pt-8 pb-3 px-4 flex items-center justify-between bg-white/80 backdrop-blur-md shadow-sm z-30 border-b border-gray-100">
                                 <button onClick={goHome} className="p-2 -ml-1 rounded-full hover:bg-gray-100 text-slate-700 active:bg-gray-200 transition-colors">
                                     <Icons.ArrowLeft size={22} />
                                 </button>
-                                <span className="font-bold text-sm text-slate-800 uppercase tracking-wide">{selectedDay.day} • {selectedDay.title}</span>
+                                <div className="text-center">
+                                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{selectedDay.day}</div>
+                                    <div className="font-bold text-sm text-slate-800">{selectedDay.title}</div>
+                                </div>
                                 <div className="w-9"></div> 
                             </div>
 
-                            {/* Content - Compact */}
-                            <div className="flex-grow overflow-y-auto px-5 py-5 content-enter no-scrollbar">
+                            <div className="flex-grow px-5 py-5 pb-20">
                                 
                                 {/* Trip Trick Box */}
                                 {selectedDay.trick && (
-                                    <div className="bg-amber-50 border border-amber-100 rounded-2xl p-3.5 mb-6 flex items-start gap-3 shadow-sm">
+                                    <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 mb-6 flex items-start gap-3 shadow-sm">
                                         <div className="bg-amber-100 p-1.5 rounded-full text-amber-500 mt-0.5 shrink-0">
-                                            <Icons.Lightbulb size={16} />
+                                            <Icons.Lightbulb size={18} />
                                         </div>
                                         <div>
                                             <h4 className="text-[10px] font-extrabold text-amber-800 uppercase tracking-widest mb-1">Trip Trick</h4>
-                                            <p className="text-xs text-amber-900/80 font-medium leading-relaxed">{selectedDay.trick}</p>
+                                            <p className="text-sm text-amber-900/80 font-medium leading-relaxed">{selectedDay.trick}</p>
                                         </div>
                                     </div>
                                 )}
 
                                 {/* Timeline */}
-                                <div className="space-y-4 border-l-[2px] border-gray-200 ml-2.5 pl-7 pb-10">
+                                <div className="space-y-6 border-l-[2px] border-gray-200 ml-3 pl-8">
                                     {selectedDay.activities.map((act, i) => (
                                         <div key={i} className="relative group">
                                             {/* Icon Dot */}
-                                            <div className="absolute -left-[37px] top-0 bg-white border-2 border-indigo-500 text-indigo-500 p-1 rounded-full shadow-sm z-10 group-hover:scale-110 transition-transform">
-                                                {React.cloneElement(act.icon, { size: 14 })}
+                                            <div className={`absolute -left-[41px] top-0 bg-white border-2 p-1.5 rounded-full shadow-sm z-10 group-hover:scale-110 transition-transform ${act.isFood ? 'border-orange-500 text-orange-500' : 'border-indigo-500 text-indigo-500'}`}>
+                                                {/* SAFETY CHECK: Ensure icon exists */}
+                                                {act.icon ? React.cloneElement(act.icon, { size: 16 }) : <Icons.Circle size={16} />}
                                             </div>
                                             
                                             {/* Card */}
-                                            <div className="bg-white p-3.5 rounded-2xl shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] border border-gray-100 flex justify-between items-start gap-3 active:scale-[0.98] transition-transform">
-                                                <div className="flex-grow min-w-0">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <span className="text-[10px] font-mono text-indigo-600 font-bold bg-indigo-50 px-1.5 py-0.5 rounded">{act.time}</span>
-                                                        <h3 className="font-bold text-sm text-gray-900 truncate">{act.title}</h3>
+                                            <div className={`rounded-2xl shadow-sm border overflow-hidden active:scale-[0.99] transition-transform ${act.isFood ? 'bg-orange-50 border-orange-200' : 'bg-white border-gray-100'}`}>
+                                                {/* Image Placeholder with Safety Check */}
+                                                {act.image && (
+                                                    <div className="h-32 w-full overflow-hidden bg-gray-100 relative">
+                                                        <img 
+                                                            src={act.image} 
+                                                            alt={act.title} 
+                                                            onError={handleImageError} 
+                                                            className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" 
+                                                        />
+                                                        <div className="absolute top-2 right-2">
+                                                            <button 
+                                                                onClick={(e) => openMap(act.map, e)}
+                                                                className="bg-white/90 backdrop-blur text-blue-600 p-2 rounded-full hover:bg-blue-500 hover:text-white transition-all shadow-md"
+                                                            >
+                                                                <Icons.Map size={16} />
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                    <div className="text-xs text-gray-700 font-medium leading-snug mb-0.5">{act.detail}</div>
-                                                    <div className="text-[10px] text-gray-400 mt-0.5 truncate">
+                                                )}
+
+                                                <div className="p-4">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${act.isFood ? 'text-orange-600 bg-orange-100' : 'text-indigo-600 bg-indigo-50'}`}>{act.time}</span>
+                                                        {act.isFood && <span className="text-[10px] font-bold text-orange-500 bg-white px-1.5 py-0.5 rounded border border-orange-100">Recommended</span>}
+                                                    </div>
+                                                    <h3 className="font-bold text-base text-gray-900 mb-1">{act.title}</h3>
+                                                    <div className="text-sm text-gray-700 font-medium leading-snug mb-1">{act.detail}</div>
+                                                    <div className="text-xs text-gray-400">
                                                         {act.sub}
                                                     </div>
                                                 </div>
-                                                
-                                                {/* Map Button */}
-                                                <button 
-                                                    onClick={(e) => openMap(act.map, e)}
-                                                    className="flex-shrink-0 bg-blue-50 text-blue-600 p-2.5 rounded-xl hover:bg-blue-100 active:bg-blue-200 transition-colors"
-                                                >
-                                                    <Icons.Map size={18} />
-                                                </button>
                                             </div>
                                         </div>
                                     ))}
@@ -388,9 +398,6 @@
                             </div>
                         </div>
                     )}
-
-                    {/* Home Indicator */}
-                    <div className="absolute bottom-1.5 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-black/20 rounded-full z-40"></div>
                 </div>
             );
         };
