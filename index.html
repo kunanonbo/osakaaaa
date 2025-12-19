@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Osaka Plan</title>
+    <title>Osaka Trip Plan 2026</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -39,6 +39,13 @@
         
         .animate-weather-circle {
             animation: enlarge infinite ease-in-out;
+        }
+
+        /* Popup Animation */
+        .popup-enter { animation: popupEnter 0.2s ease-out forwards; }
+        @keyframes popupEnter {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
         }
     </style>
 </head>
@@ -78,7 +85,14 @@
             Sun: createIcon(<><circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" /><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" /><line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" /><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" /></>),
             Cloud: createIcon(<path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />),
             CloudRain: createIcon(<><line x1="16" y1="13" x2="16" y2="21" /><line x1="8" y1="13" x2="8" y2="21" /><line x1="12" y1="15" x2="12" y2="23" /><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25" /></>),
-            Snow: createIcon(<><line x1="8" y1="8" x2="8" y2="8" /><line x1="8" y1="16" x2="8" y2="16" /><line x1="16" y1="8" x2="16" y2="8" /><line x1="16" y1="16" x2="16" y2="16" /><path d="M12 2v20" /><path d="M20.66 7 3.34 17" /><path d="M3.34 7l17.32 10" /></>)
+            Snow: createIcon(<><line x1="8" y1="8" x2="8" y2="8" /><line x1="8" y1="16" x2="8" y2="16" /><line x1="16" y1="8" x2="16" y2="8" /><line x1="16" y1="16" x2="16" y2="16" /><path d="M12 2v20" /><path d="M20.66 7 3.34 17" /><path d="M3.34 7l17.32 10" /></>),
+            Tool: createIcon(<><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></>),
+            Dice: createIcon(<><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="1" /><circle cx="15" cy="15" r="1" /></>),
+            Translate: createIcon(<><path d="m5 8 6 6" /><path d="m4 14 6-6 2-3" /><path d="M2 5h12" /><path d="M7 2h1" /><path d="m22 22-5-10-5 10" /><path d="M14 18h6" /></>),
+            X: createIcon(<><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></>),
+            Bed: createIcon(<><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></>),
+            Calendar: createIcon(<><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></>),
+            Moon: createIcon(<><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></>)
         };
 
         // --- Data ---
@@ -86,7 +100,7 @@
             {
                 category: "Documents & Money",
                 items: [
-                    { id: 'doc1', text: "Passport (สำคัญมาก)" },
+                    { id: 'doc1', text: "Passport (อายุเหลือ > 6 เดือน)" },
                     { id: 'doc2', text: "ลงทะเบียน Visit Japan Web (QR Code)" },
                     { id: 'doc3', text: "เงินสด (Yen) & บัตรเครดิต" },
                     { id: 'doc4', text: "บัตร Travel Card / ICOCA / Suica" },
@@ -116,49 +130,31 @@
             }
         ];
 
-        // --- Shopping Data ---
-        const shoppingGuideData = [
-            {
-                location: "Universal Studios Japan",
-                bg: "bg-red-50 border-red-100",
-                icon: <Icons.Star className="text-red-500"/>,
-                items: [
-                    { name: "Power-Up Band", desc: "สายรัดข้อมือเล่น Minigame โซน Mario (เก็บเหรียญได้จริงใน App)", price: "~4,200¥" },
-                    { name: "Popcorn Bucket", desc: "ถังป๊อปคอร์นลาย Limited (Mario Star / Minion)", price: "~4,500¥" },
-                    { name: "Harry Potter Wand", desc: "ไม้กายสิทธิ์ Interactive (เสกเวทมนตร์ตามจุดต่างๆ ได้)", price: "~5,500¥" }
-                ]
-            },
-            {
-                location: "Kyoto (Souvenirs)",
-                bg: "bg-green-50 border-green-100",
-                icon: <Icons.MapPin className="text-green-600"/>,
-                items: [
-                    { name: "Matcha (Green Tea)", desc: "ผงชาเขียวแท้ / ขนมรสชาเขียว จากเมือง Uji", price: "Varies" },
-                    { name: "Yatsuhashi", desc: "ขนมแป้งห่อไส้ถั่วแดง (ของฝากอันดับ 1 ของเกียวโต)", price: "~600¥+" },
-                    { name: "Omamori (Charms)", desc: "เครื่องรางวัดน้ำใส / ศาลเจ้าจิ้งจอก (ความรัก/การเรียน)", price: "~500¥" }
-                ]
-            },
-            {
-                location: "Don Quijote / Drug Store",
-                bg: "bg-blue-50 border-blue-100",
-                icon: <Icons.Bag className="text-blue-500"/>,
-                items: [
-                    { name: "KitKat Flavors", desc: "รสสาเก, รสวาซาบิ, รสชีสเค้ก (หาซื้อยากในไทย)", price: "~300¥" },
-                    { name: "Skincare", desc: "กันแดด Anessa, โฟมล้างหน้า Perfect Whip (ถูกกว่าไทยมาก)", price: "Varies" },
-                    { name: "Vitamins (DHC)", desc: "วิตามินซอง DHC ราคาถูกและเบาขนกลับง่าย", price: "~400¥+" }
-                ]
-            },
-            {
-                location: "Kansai Airport (KIX)",
-                bg: "bg-indigo-50 border-indigo-100",
-                icon: <Icons.Plane className="text-indigo-500"/>,
-                items: [
-                    { name: "Royce' Chocolate", desc: "ช็อกโกแลตสด (Nama Chocolate) ต้องซื้อถุงเก็บความเย็น", price: "~800¥" },
-                    { name: "Tokyo Banana", desc: "ถึงจะอยู่โอซาก้า แต่ที่สนามบินก็มีขายนะ", price: "~1,200¥" },
-                    { name: "LeTAO Cheesecake", desc: "ชีสเค้กจากฮอกไกโด อร่อยแสงออกปาก", price: "~2,000¥" }
-                ]
-            }
+        // --- Language Data ---
+        const phrases = [
+            // Basic
+            { t: "Hello", j: "Konnichiwa", k: "こんにちは" },
+            { t: "Thank you", j: "Arigatou gozaimasu", k: "ありがとうございます" },
+            { t: "Excuse me / Sorry", j: "Sumimasen", k: "すみません" },
+            { t: "Where is the toilet?", j: "Toire wa doko desu ka?", k: "トイレはどこですか？" },
+            { t: "English menu?", j: "Eigo no menyu wa arimasu ka?", k: "英語のメニューはありますか？" },
+            { t: "Bill please", j: "Okaikei onegaishimasu", k: "お会計お願いします" },
+            
+            // Shopping
+            { t: "How much is this?", j: "Kore wa ikura desu ka?", k: "これはいくらですか？" },
+            { t: "I'll take this", j: "Kore wo kudasai", k: "これをください" },
+            { t: "Credit card okay?", j: "Kaado wa tsukaemasu ka?", k: "カードは使えますか？" },
+            { t: "Tax free?", j: "Menzei dekimasu ka?", k: "免税できますか？" },
+            { t: "Can I try it on?", j: "Shichaku shitemo ii desu ka?", k: "試着してもいいですか？" },
+            { t: "Do you have a new one?", j: "Atarashii no wa arimasu ka?", k: "新しいのはありますか？" },
+            { t: "Separate bags please", j: "Fukuro wo wakete kudasai", k: "袋を分けてください" },
+            { t: "Discount?", j: "Waribiki wa arimasu ka?", k: "割引はありますか？" },
+            { t: "What is this?", j: "Kore wa nan desu ka?", k: "これは何ですか？" },
+            { t: "Just looking", j: "Miteiru dake desu", k: "見ているだけです" }
         ];
+
+        // --- Player Randomizer Data ---
+        const playerList = ["MM", "BB", "FF", "NN"];
 
         // Updated with Real Wikimedia Images
         const tripData = [
@@ -223,14 +219,15 @@
                 id: 5,
                 day: "Day 5",
                 date: "16 Feb",
-                title: "Kyoto Day Trip",
+                title: "Mt. Koya Snow Trip",
                 color: "bg-orange-50 text-orange-900 border-orange-200",
-                trick: "เกียวโตเดินเยอะที่สุด! Fushimi Inari ควรไปเช้าตรู่ (ก่อน 8 โมง) เพื่อเลี่ยงคน",
+                trick: "ซื้อ Koyasan World Heritage Ticket ที่สถานี Namba คุ้มมาก! อากาศบนเขาหนาวกว่าพื้นราบ เตรียมชุดกันหนาวจัดเต็ม",
                 activities: [
-                    { time: "08:00", title: "Go to Kyoto", detail: "Keihan Line", sub: "420¥ (~100฿) • Yodoyabashi", icon: <Icons.Train />, map: "Yodoyabashi Station" },
-                    { time: "09:30", title: "Fushimi Inari", detail: "Red Torii Gates", sub: "Free • Hiking", icon: <Icons.MapPin />, map: "Fushimi Inari Taisha", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/KyotoFushimiInariLarge.jpg/640px-KyotoFushimiInariLarge.jpg" },
-                    { time: "12:00", title: "Kiyomizu-dera", detail: "Bus 100/206", sub: "400¥ (~90฿) • Temple", icon: <Icons.Camera />, map: "Kiyomizu-dera", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Kyoto_Kiyomizu-Dera.jpg/640px-Kyoto_Kiyomizu-Dera.jpg" },
-                    { time: "19:00", title: "Yakiniku Hiro", detail: "Kyoto Style BBQ", sub: "Famous Local Chain 🥩", icon: <Icons.Star />, map: "Yakiniku Hiro Kyoto Station", isFood: true, image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Yakiniku_001.jpg/640px-Yakiniku_001.jpg" }
+                    { time: "08:00", title: "Go to Mt. Koya", detail: "Nankai Koya Line", sub: "Limited Express Koya", icon: <Icons.Train />, map: "Nankai Koya Line", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Nankai_11000_series_01.jpg/800px-Nankai_11000_series_01.jpg" },
+                    { time: "10:30", title: "Okunoin", detail: "Pine Forest & Cemetery", sub: "Snow Hunting ❄️", icon: <Icons.MapPin />, map: "Okunoin Cemetery", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Koyasan_Okunoin_05.JPG/800px-Koyasan_Okunoin_05.JPG" },
+                    { time: "12:30", title: "Buddhist Lunch", detail: "Shojin Ryori", sub: "Vegetarian Monk Food", icon: <Icons.Coffee />, map: "Koyasan Shojin Ryori", isFood: true, image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Shojin_ryori_ryuanji.jpg/800px-Shojin_ryori_ryuanji.jpg" },
+                    { time: "14:00", title: "Danjo Garan", detail: "Main Temple Complex", sub: "Konpon Daito Pagoda", icon: <Icons.Building />, map: "Danjo Garan", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Danjo_Garan.jpg/640px-Danjo_Garan.jpg" },
+                    { time: "17:00", title: "Return to Osaka", detail: "Namba Station", sub: "~90 mins travel", icon: <Icons.Train />, map: "Namba Station" }
                 ]
             },
             {
@@ -260,25 +257,40 @@
             const [weather, setWeather] = useState(null);
             const [currentTime, setCurrentTime] = useState(new Date());
             const [weatherTheme, setWeatherTheme] = useState("bg-[#F17022]"); // Default Orange
+            
+            // Player Randomizer State
+            const [randomPlayer, setRandomPlayer] = useState(null);
+            const [isRolling, setIsRolling] = useState(false);
+
+            // Language Helper State
+            const [selectedPhrase, setSelectedPhrase] = useState(null);
+
+            // Hotel Info State (Simulated)
+            const [showHotelCard, setShowHotelCard] = useState(false);
 
             useEffect(() => {
                 const fetchWeather = async () => {
                     try {
-                        // Coordinates for Osaka: 34.6937, 135.5023
-                        // Using Open-Meteo API for real-time weather
                         const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=34.6937&longitude=135.5023&current_weather=true&timezone=Asia%2FTokyo');
                         const data = await res.json();
                         setWeather(data.current_weather);
                         
-                        // Set dynamic theme based on temperature
+                        // Set dynamic theme based on temperature and time (is_day)
                         if (data.current_weather) {
-                            const temp = data.current_weather.temperature;
-                            if (temp < 5) {
-                                setWeatherTheme("bg-[#2B32B2]"); // Cold Blue
-                            } else if (temp >= 5 && temp <= 10) {
-                                setWeatherTheme("bg-[#00d2ff]"); // Sky Blue
+                            const { temperature, is_day } = data.current_weather;
+                            
+                            if (is_day === 0) {
+                                // Night Theme: Midnight Blue Gradient
+                                setWeatherTheme("bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364]");
                             } else {
-                                setWeatherTheme("bg-[#F17022]"); // Orange
+                                // Day Theme: Based on Temperature
+                                if (temperature < 5) {
+                                    setWeatherTheme("bg-[#2B32B2]"); // Cold Blue
+                                } else if (temperature >= 5 && temperature <= 10) {
+                                    setWeatherTheme("bg-[#00d2ff]"); // Sky Blue
+                                } else {
+                                    setWeatherTheme("bg-[#F17022]"); // Orange
+                                }
                             }
                         }
                     } catch (e) {
@@ -286,12 +298,8 @@
                     }
                 };
                 
-                fetchWeather(); // Fetch on mount
-                
-                // Refresh weather every 15 minutes (900000 ms) to keep it real-time
-                const weatherInterval = setInterval(fetchWeather, 900000);
-
-                // Clock timer - update every minute
+                fetchWeather();
+                const weatherInterval = setInterval(fetchWeather, 900000); // 15 mins
                 const timer = setInterval(() => setCurrentTime(new Date()), 60000); 
                 
                 return () => {
@@ -329,6 +337,21 @@
                 e.target.src = "https://placehold.co/600x400/e2e8f0/94a3b8?text=Image+Unavailable";
             };
 
+            const randomizePlayer = () => {
+                setIsRolling(true);
+                setRandomPlayer(null);
+                
+                let count = 0;
+                const interval = setInterval(() => {
+                    setRandomPlayer(playerList[Math.floor(Math.random() * playerList.length)]);
+                    count++;
+                    if (count > 10) {
+                        clearInterval(interval);
+                        setIsRolling(false);
+                    }
+                }, 100);
+            };
+
             // Calculate Currency
             const calculateResult = () => {
                 if (!amountInput) return "0";
@@ -343,241 +366,276 @@
                 : [100, 500, 1000, 2000, 5000, 10000]; // Baht amounts
 
             // Weather helper
-            const getWeatherIcon = (code) => {
+            const getWeatherIcon = (code, isDay) => {
+                if (isDay === 0) {
+                    // Night Icons
+                    if (code === 0 || code === 1) return <Icons.Moon className="text-yellow-100 drop-shadow-sm" size={28} />;
+                    return <Icons.Cloud className="text-gray-300/80" size={28} />;
+                }
+                
+                // Day Icons
                 if (code === 0) return <Icons.Sun className="text-white drop-shadow-sm" size={28} />;
                 if (code >= 1 && code <= 3) return <Icons.Cloud className="text-white/90 drop-shadow-sm" size={28} />;
                 if (code >= 51) return <Icons.CloudRain className="text-blue-100 drop-shadow-sm" size={28} />;
-                return <Icons.Cloud className="text-white/80" size={28} />; // default
+                return <Icons.Cloud className="text-white/80" size={28} />; 
             };
 
-            const getWeatherDesc = (code) => {
-                if (code === 0) return "Sunny";
+            const getWeatherDesc = (code, isDay) => {
+                if (code === 0) return isDay === 0 ? "Clear Night" : "Sunny";
                 if (code >= 1 && code <= 3) return "Cloudy";
                 if (code >= 51 && code <= 67) return "Rainy";
                 if (code >= 71) return "Snow";
-                return "Clear";
+                return isDay === 0 ? "Clear" : "Sunny";
             };
 
             return (
                 <div className="w-full max-w-md mx-auto bg-white shadow-xl min-h-screen flex flex-col font-kanit text-slate-800">
                     
-                    {/* --- HOME VIEW --- */}
-                    {view === 'home' && (
-                        <div className="page-enter flex-grow pb-8 px-5">
-                            
-                            {/* Header */}
-                            <div className="pt-10 mb-6 flex justify-between items-end">
-                                <div>
-                                    <h1 className="text-3xl font-bold text-gray-900 leading-none mb-1">Osaka Trip แบบคนเท่ๆ</h1>
-                                    <p className="text-sm text-gray-500 font-light">6 Days • Feb 2026</p>
-                                </div>
-                                <div className="bg-gray-100 px-2.5 py-1.5 rounded-lg">
-                                    <span className="text-xs text-gray-500 font-mono font-bold">12-17 FEB</span>
-                                </div>
-                            </div>
+                    {/* Main Content Area */}
+                    <div className="flex-grow pb-20 overflow-y-auto no-scrollbar">
 
-                            {/* New Weather Widget (Dynamic Theme) */}
-                            <div className={`w-full h-32 ${weatherTheme} rounded-[20px] shadow-lg relative overflow-hidden text-white mb-6 select-none font-roboto transition-colors duration-500`}>
-                                {/* Background Circles Animation */}
-                                <div className="absolute -top-[30px] -right-[20px] w-20 h-20 rounded-full bg-white/20 animate-weather-circle" style={{animationDuration: '5s'}}></div>
-                                <div className="absolute -top-[70px] -right-[50px] w-[150px] h-[150px] rounded-full bg-white/10 animate-weather-circle" style={{animationDuration: '7s'}}></div>
-                                <div className="absolute -top-[100px] -right-[50px] w-[200px] h-[200px] rounded-full bg-white/10 animate-weather-circle" style={{animationDuration: '10s'}}></div>
-
-                                {/* Content */}
-                                <div className="relative z-10 p-5 h-full flex flex-col justify-between">
-                                    <div className="flex justify-between items-start">
-                                        <div className="flex items-center gap-1.5">
-                                            {weather ? getWeatherIcon(weather.weathercode) : <Icons.Sun className="text-white" size={24}/>}
-                                            <span className="text-xl font-light font-roboto">{weather ? getWeatherDesc(weather.weathercode) : "Sunny"}</span>
-                                        </div>
-                                        <div className="text-lg font-light tracking-wide font-noto">
-                                            {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
-                                        </div>
+                        {/* --- HOME VIEW --- */}
+                        {view === 'home' && (
+                            <div className="page-enter px-5 pt-10">
+                                {/* Header */}
+                                <div className="mb-6 flex justify-between items-end">
+                                    <div>
+                                        <h1 className="text-3xl font-bold text-gray-900 leading-none mb-1">Osaka Trip</h1>
+                                        <p className="text-sm text-gray-500 font-light">6 Days • Feb 2026</p>
                                     </div>
-
-                                    <div className="flex justify-between items-end">
-                                        <div className="text-5xl font-normal flex items-start font-roboto leading-none">
-                                            {weather ? Math.round(weather.temperature) : "24"}
-                                            <span className="text-2xl font-light mt-1 ml-1">°C</span>
-                                        </div>
-                                        <div className="flex items-center gap-1 text-xs font-light opacity-90 font-noto mb-1">
-                                            <Icons.MapPin size={12} />
-                                            <span>Osaka, JP</span>
-                                        </div>
+                                    <div className="bg-gray-100 px-2.5 py-1.5 rounded-lg">
+                                        <span className="text-xs text-gray-500 font-mono font-bold">12-17 FEB</span>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Buttons Grid: Prep, Shopping, Converter */}
-                            <div className="grid grid-cols-2 gap-3 mb-6">
+                                {/* Weather Widget */}
+                                <div className={`w-full h-32 ${weatherTheme} rounded-[20px] shadow-lg relative overflow-hidden text-white mb-6 select-none font-roboto transition-colors duration-500`}>
+                                    <div className="absolute -top-[30px] -right-[20px] w-20 h-20 rounded-full bg-white/20 animate-weather-circle" style={{animationDuration: '5s'}}></div>
+                                    <div className="absolute -top-[70px] -right-[50px] w-[150px] h-[150px] rounded-full bg-white/10 animate-weather-circle" style={{animationDuration: '7s'}}></div>
+                                    <div className="absolute -top-[100px] -right-[50px] w-[200px] h-[200px] rounded-full bg-white/10 animate-weather-circle" style={{animationDuration: '10s'}}></div>
+
+                                    <div className="relative z-10 p-5 h-full flex flex-col justify-between">
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex items-center gap-1.5">
+                                                {weather ? getWeatherIcon(weather.weathercode, weather.is_day) : <Icons.Sun className="text-white" size={24}/>}
+                                                <span className="text-xl font-light font-roboto">{weather ? getWeatherDesc(weather.weathercode, weather.is_day) : "Sunny"}</span>
+                                            </div>
+                                            <div className="text-lg font-light tracking-wide font-noto">
+                                                {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Tokyo' })}
+                                            </div>
+                                        </div>
+
+                                        <div className="flex justify-between items-end">
+                                            <div className="text-5xl font-normal flex items-start font-roboto leading-none">
+                                                {weather ? Math.round(weather.temperature) : "24"}
+                                                <span className="text-2xl font-light mt-1 ml-1">°C</span>
+                                            </div>
+                                            <div className="flex items-center gap-1 text-xs font-light opacity-90 font-noto mb-1">
+                                                <Icons.MapPin size={12} />
+                                                <span>Osaka, JP</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Checklist Button */}
                                 <button 
                                     onClick={() => { setView('checklist'); window.scrollTo(0,0); }}
-                                    className="text-left bg-slate-900 text-white p-4 rounded-3xl shadow-lg relative overflow-hidden transition-transform active:scale-95 group flex flex-col justify-between h-28"
+                                    className="w-full mb-6 bg-slate-900 text-white p-4 rounded-3xl shadow-lg relative overflow-hidden transition-transform active:scale-95 group flex items-center justify-between"
                                 >
-                                    <div className="flex justify-between items-start">
+                                    <div className="flex items-center gap-3 relative z-10">
                                         <div className="bg-white/20 p-2 rounded-xl group-hover:bg-white/30 transition-colors"><Icons.Clipboard size={20}/></div>
-                                        <div className="text-xs font-bold opacity-60 tracking-wider">PREP</div>
-                                    </div>
-                                    <div className="font-medium text-sm flex items-center gap-1">Checklist <Icons.ArrowLeft size={12} className="rotate-180 opacity-50"/></div>
-                                </button>
-
-                                <button 
-                                    onClick={() => { setView('shopping'); window.scrollTo(0,0); }}
-                                    className="text-left bg-indigo-600 text-white p-4 rounded-3xl shadow-lg relative overflow-hidden transition-transform active:scale-95 group flex flex-col justify-between h-28"
-                                >
-                                    <div className="flex justify-between items-start">
-                                        <div className="bg-white/20 p-2 rounded-xl group-hover:bg-white/30 transition-colors"><Icons.Gift size={20}/></div>
-                                        <div className="text-xs font-bold opacity-60 tracking-wider">SHOP</div>
-                                    </div>
-                                    <div className="font-medium text-sm flex items-center gap-1">Shopping Guide <Icons.ArrowLeft size={12} className="rotate-180 opacity-50"/></div>
-                                </button>
-                            </div>
-
-                            {/* Currency Converter Banner Button */}
-                            <button 
-                                onClick={() => { setView('converter'); window.scrollTo(0,0); }}
-                                className="w-full mb-6 bg-gradient-to-r from-emerald-500 to-teal-500 text-white p-4 rounded-3xl shadow-lg shadow-teal-200 transition-transform active:scale-95 flex items-center justify-between group"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="bg-white/20 p-2 rounded-full"><Icons.Currency size={24}/></div>
-                                    <div className="text-left">
-                                        <div className="font-bold text-lg leading-none">Currency Converter</div>
-                                        <div className="text-xs opacity-90 font-light mt-1">Yen (¥) ↔ Baht (฿)</div>
-                                    </div>
-                                </div>
-                                <Icons.ArrowLeft size={20} className="rotate-180 opacity-70 group-hover:translate-x-1 transition-transform"/>
-                            </button>
-
-                            {/* Days Grid */}
-                            <div className="grid grid-cols-2 gap-3">
-                                {tripData.map((item, idx) => (
-                                    <button 
-                                        key={item.id}
-                                        onClick={() => openDay(idx)}
-                                        className={`p-4 rounded-2xl text-left transition-all active:scale-95 border shadow-sm ${item.color} hover:brightness-95 group`}
-                                    >
-                                        <div className="flex justify-between items-start mb-3">
-                                            <span className="text-[10px] font-bold opacity-60 uppercase tracking-wide group-hover:opacity-100 transition-opacity">{item.day}</span>
-                                            <span className="text-[10px] font-bold bg-white/60 px-1.5 py-0.5 rounded-md backdrop-blur-sm">{item.date}</span>
+                                        <div className="text-left">
+                                            <div className="text-xs font-bold opacity-60 tracking-wider">PREPARATION</div>
+                                            <div className="font-medium text-sm">Trip Checklist</div>
                                         </div>
-                                        <div className="font-bold text-lg leading-tight mb-2">{item.title}</div>
-                                        <div className="flex items-center gap-1 opacity-70 text-[10px]">
-                                            {item.activities.length} Activities <Icons.ArrowLeft size={10} className="rotate-180"/>
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-
-                            {/* Footer */}
-                            <div className="mt-8 mb-6 text-center opacity-60">
-                                <div className="flex justify-center items-center gap-2 mb-2">
-                                    <div className="h-[1px] w-8 bg-gray-300"></div>
-                                    <span className="text-xs text-gray-400 font-medium">Safe Travels 🇯🇵</span>
-                                    <div className="h-[1px] w-8 bg-gray-300"></div>
-                                </div>
-                                <div className="flex justify-center gap-3 text-[10px] text-gray-500 font-mono">
-                                    <span className="bg-white border border-gray-200 px-2 py-1 rounded-md shadow-sm">🚑 119 (Medical)</span>
-                                    <span className="bg-white border border-gray-200 px-2 py-1 rounded-md shadow-sm">🚓 110 (Police)</span>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* --- CONVERTER VIEW --- */}
-                    {view === 'converter' && (
-                        <div className="page-enter flex flex-col min-h-screen bg-slate-50">
-                            {/* Header */}
-                            <div className="bg-white border-b border-gray-100 p-4 flex items-center justify-between shadow-sm z-10">
-                                <button onClick={goHome} className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors">
-                                    <Icons.ArrowLeft size={24} className="text-slate-600"/>
+                                    </div>
+                                    <Icons.ArrowLeft size={16} className="rotate-180 opacity-50 relative z-10"/>
                                 </button>
-                                <div className="font-bold text-slate-800">Currency Converter</div>
-                                <div className="w-8"></div>
-                            </div>
 
-                            <div className="flex-grow p-6 flex flex-col items-center pt-10">
-                                {/* Input Card */}
-                                <div className="bg-white w-full rounded-3xl shadow-md p-6 mb-6 relative overflow-hidden">
-                                    <label className="block text-sm font-medium text-gray-500 mb-2">
-                                        {isYenToThb ? "JAPANESE YEN (¥)" : "THAI BAHT (฿)"}
-                                    </label>
-                                    <div className="relative">
-                                        <span className="absolute left-0 top-1/2 -translate-y-1/2 text-3xl font-bold text-gray-300">
-                                            {isYenToThb ? "¥" : "฿"}
-                                        </span>
-                                        <input 
-                                            type="number" 
-                                            value={amountInput}
-                                            onChange={(e) => setAmountInput(e.target.value)}
-                                            placeholder="0"
-                                            className="w-full text-right text-4xl font-bold bg-transparent border-b-2 border-gray-100 focus:border-teal-500 focus:outline-none pb-2 pl-8 placeholder-gray-200"
-                                            autoFocus
-                                        />
-                                    </div>
-                                    
-                                    <div className="flex justify-center my-6">
+                                {/* Days Grid */}
+                                <div className="grid grid-cols-2 gap-3 mb-8">
+                                    {tripData.map((item, idx) => (
                                         <button 
-                                            onClick={toggleCurrency}
-                                            className="bg-teal-50 rounded-full p-3 border border-teal-100 hover:bg-teal-100 active:scale-95 transition-all shadow-sm"
+                                            key={item.id}
+                                            onClick={() => openDay(idx)}
+                                            className={`p-4 rounded-2xl text-left transition-all active:scale-95 border shadow-sm ${item.color} hover:brightness-95 group`}
                                         >
-                                            <Icons.Exchange className="text-teal-600 rotate-90" size={24} />
-                                        </button>
-                                    </div>
-
-                                    <label className="block text-sm font-medium text-gray-500 mb-2">
-                                        {isYenToThb ? "THAI BAHT (฿)" : "JAPANESE YEN (¥)"}
-                                    </label>
-                                    <div className="text-right text-4xl font-bold text-teal-600 pb-2 border-b-2 border-transparent">
-                                        {isYenToThb ? "฿" : "¥"}{calculateResult()}
-                                    </div>
-                                </div>
-
-                                {/* Rate Setting */}
-                                <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-sm mb-8">
-                                    <span className="text-xs text-gray-400 font-medium">Rate:</span>
-                                    <input 
-                                        type="number" 
-                                        value={exchangeRate}
-                                        onChange={(e) => setExchangeRate(e.target.value)}
-                                        className="w-16 text-center bg-gray-50 rounded-md text-sm font-bold text-gray-700 focus:outline-none focus:ring-1 focus:ring-teal-500"
-                                        step="0.01"
-                                    />
-                                </div>
-
-                                {/* Quick Reference Grid */}
-                                <div className="w-full grid grid-cols-3 gap-3">
-                                    {quickPresets.map((amount) => (
-                                        <button 
-                                            key={amount}
-                                            onClick={() => setAmountInput(amount.toString())}
-                                            className="bg-white border border-gray-100 p-3 rounded-xl shadow-sm active:scale-95 transition-transform flex flex-col items-center hover:border-teal-200"
-                                        >
-                                            <span className="text-xs text-gray-400 font-bold">
-                                                {isYenToThb ? "¥" : "฿"}{amount.toLocaleString()}
-                                            </span>
-                                            <span className="text-sm font-bold text-teal-600">
-                                                {isYenToThb ? "฿" : "¥"}{(isYenToThb ? amount * exchangeRate : amount / exchangeRate).toLocaleString('th-TH', { maximumFractionDigits: isYenToThb ? 2 : 0 })}
-                                            </span>
+                                            <div className="flex justify-between items-start mb-3">
+                                                <span className="text-[10px] font-bold opacity-60 uppercase tracking-wide group-hover:opacity-100 transition-opacity">{item.day}</span>
+                                                <span className="text-[10px] font-bold bg-white/60 px-1.5 py-0.5 rounded-md backdrop-blur-sm">{item.date}</span>
+                                            </div>
+                                            <div className="font-bold text-lg leading-tight mb-2">{item.title}</div>
+                                            <div className="flex items-center gap-1 opacity-70 text-[10px]">
+                                                {item.activities.length} Activities <Icons.ArrowLeft size={10} className="rotate-180"/>
+                                            </div>
                                         </button>
                                     ))}
                                 </div>
+                                
+                                {/* Footer */}
+                                <div className="text-center opacity-60 pb-4">
+                                    <div className="flex justify-center items-center gap-2 mb-2">
+                                        <div className="h-[1px] w-8 bg-gray-300"></div>
+                                        <span className="text-xs text-gray-400 font-medium">Safe Travels 🇯🇵</span>
+                                        <div className="h-[1px] w-8 bg-gray-300"></div>
+                                    </div>
+                                    <div className="flex justify-center gap-3 text-[10px] text-gray-500 font-mono">
+                                        <span className="bg-white border border-gray-200 px-2 py-1 rounded-md shadow-sm">🚑 119 (Medical)</span>
+                                        <span className="bg-white border border-gray-200 px-2 py-1 rounded-md shadow-sm">🚓 110 (Police)</span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {/* --- CHECKLIST VIEW --- */}
-                    {view === 'checklist' && (
-                        <div className="page-enter flex flex-col min-h-screen bg-slate-50">
-                            {/* Sticky Nav */}
-                            <div className="sticky top-0 pt-8 pb-3 px-4 flex items-center justify-between bg-white/80 backdrop-blur-md shadow-sm z-30 border-b border-gray-100">
-                                <button onClick={goHome} className="p-2 -ml-1 rounded-full hover:bg-gray-100 text-slate-700 active:bg-gray-200 transition-colors">
-                                    <Icons.ArrowLeft size={22} />
-                                </button>
-                                <span className="font-bold text-sm text-slate-800 uppercase tracking-wide">Checklist</span>
-                                <div className="w-9"></div> 
+                        {/* --- TOOLS VIEW --- */}
+                        {view === 'tools' && (
+                            <div className="page-enter px-5 pt-10 pb-5">
+                                <h2 className="text-2xl font-bold text-slate-800 mb-6">Trip Tools</h2>
+                                <div className="space-y-8">
+                                    
+                                    {/* 1. Hotel Card (Show to Driver) */}
+                                    <div>
+                                        <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                            <Icons.Home size={18} /> Accommodation Info
+                                        </h3>
+                                        <button 
+                                            onClick={() => setShowHotelCard(true)}
+                                            className="w-full bg-indigo-600 text-white p-4 rounded-2xl shadow-md active:scale-95 transition-transform flex items-center justify-between"
+                                        >
+                                            <span className="font-medium">Show Hotel Address (Taxi)</span>
+                                            <Icons.MapPin size={20} />
+                                        </button>
+                                    </div>
+
+                                    {/* 2. Player Randomizer */}
+                                    <div>
+                                        <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                            <Icons.Dice size={18} /> Player Randomizer
+                                        </h3>
+                                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 text-center">
+                                            <div className="h-24 flex items-center justify-center mb-4">
+                                                {randomPlayer ? (
+                                                    <div className="animate-bounce">
+                                                        <div className="font-black text-6xl text-slate-800 font-roboto">{randomPlayer}</div>
+                                                        <div className="text-xs text-slate-500 mt-2 font-bold tracking-widest">SELECTED</div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-slate-300 font-medium">Who's lucky?</div>
+                                                )}
+                                            </div>
+                                            <button 
+                                                onClick={randomizePlayer}
+                                                disabled={isRolling}
+                                                className="w-full bg-orange-500 text-white font-bold py-3 rounded-xl shadow-md shadow-orange-200 active:scale-95 transition-all disabled:opacity-50"
+                                            >
+                                                {isRolling ? "Rolling..." : "Randomize Player!"}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* 3. Language Helper */}
+                                    <div>
+                                        <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                            <Icons.Translate size={18} /> Language Helper
+                                        </h3>
+                                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden divide-y divide-gray-100">
+                                            {phrases.map((p, i) => (
+                                                <button 
+                                                    key={i} 
+                                                    onClick={() => setSelectedPhrase(p)}
+                                                    className="w-full p-4 flex justify-between items-center hover:bg-gray-50 transition-colors text-left"
+                                                >
+                                                    <span className="text-sm font-medium text-slate-800">{p.t}</span>
+                                                    <Icons.ArrowLeft className="rotate-180 text-gray-300" size={16} />
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+                        )}
 
-                            <div className="flex-grow px-5 py-5">
+                        {/* --- CONVERTER VIEW --- */}
+                        {view === 'converter' && (
+                            <div className="page-enter px-5 pt-10 pb-5 h-full flex flex-col">
+                                <h2 className="text-2xl font-bold text-slate-800 mb-6">Currency Converter</h2>
+                                <div className="flex-grow flex flex-col items-center">
+                                    {/* Input Card */}
+                                    <div className="bg-white w-full rounded-3xl shadow-md p-6 mb-6 relative overflow-hidden">
+                                        <label className="block text-sm font-medium text-gray-500 mb-2">
+                                            {isYenToThb ? "JAPANESE YEN (¥)" : "THAI BAHT (฿)"}
+                                        </label>
+                                        <div className="relative">
+                                            <span className="absolute left-0 top-1/2 -translate-y-1/2 text-3xl font-bold text-gray-300">
+                                                {isYenToThb ? "¥" : "฿"}
+                                            </span>
+                                            <input 
+                                                type="number" 
+                                                value={amountInput}
+                                                onChange={(e) => setAmountInput(e.target.value)}
+                                                placeholder="0"
+                                                className="w-full text-right text-4xl font-bold bg-transparent border-b-2 border-gray-100 focus:border-teal-500 focus:outline-none pb-2 pl-8 placeholder-gray-200"
+                                                autoFocus
+                                            />
+                                        </div>
+                                        
+                                        <div className="flex justify-center my-6">
+                                            <button 
+                                                onClick={toggleCurrency}
+                                                className="bg-teal-50 rounded-full p-3 border border-teal-100 hover:bg-teal-100 active:scale-95 transition-all shadow-sm"
+                                            >
+                                                <Icons.Exchange className="text-teal-600 rotate-90" size={24} />
+                                            </button>
+                                        </div>
+
+                                        <label className="block text-sm font-medium text-gray-500 mb-2">
+                                            {isYenToThb ? "THAI BAHT (฿)" : "JAPANESE YEN (¥)"}
+                                        </label>
+                                        <div className="text-right text-4xl font-bold text-teal-600 pb-2 border-b-2 border-transparent">
+                                            {isYenToThb ? "฿" : "¥"}{calculateResult()}
+                                        </div>
+                                    </div>
+
+                                    {/* Rate Setting */}
+                                    <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-sm mb-8">
+                                        <span className="text-xs text-gray-400 font-medium">Rate:</span>
+                                        <input 
+                                            type="number" 
+                                            value={exchangeRate}
+                                            onChange={(e) => setExchangeRate(e.target.value)}
+                                            className="w-16 text-center bg-gray-50 rounded-md text-sm font-bold text-gray-700 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                                            step="0.01"
+                                        />
+                                    </div>
+
+                                    {/* Quick Reference Grid */}
+                                    <div className="w-full grid grid-cols-3 gap-3">
+                                        {quickPresets.map((amount) => (
+                                            <button 
+                                                key={amount}
+                                                onClick={() => setAmountInput(amount.toString())}
+                                                className="bg-white border border-gray-100 p-3 rounded-xl shadow-sm active:scale-95 transition-transform flex flex-col items-center hover:border-teal-200"
+                                            >
+                                                <span className="text-xs text-gray-400 font-bold">
+                                                    {isYenToThb ? "¥" : "฿"}{amount.toLocaleString()}
+                                                </span>
+                                                <span className="text-sm font-bold text-teal-600">
+                                                    {isYenToThb ? "฿" : "¥"}{(isYenToThb ? amount * exchangeRate : amount / exchangeRate).toLocaleString('th-TH', { maximumFractionDigits: isYenToThb ? 2 : 0 })}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* --- CHECKLIST VIEW --- */}
+                        {view === 'checklist' && (
+                            <div className="page-enter px-5 pt-10 pb-5">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-2xl font-bold text-slate-800">Checklist</h2>
+                                </div>
                                 <div className="space-y-6">
                                     {checklistData.map((cat, idx) => (
                                         <div key={idx}>
@@ -602,65 +660,22 @@
                                     ))}
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {/* --- SHOPPING VIEW --- */}
-                    {view === 'shopping' && (
-                        <div className="page-enter flex flex-col min-h-screen bg-slate-50">
-                            {/* Sticky Nav */}
-                            <div className="sticky top-0 pt-8 pb-3 px-4 flex items-center justify-between bg-white/80 backdrop-blur-md shadow-sm z-30 border-b border-gray-100">
-                                <button onClick={goHome} className="p-2 -ml-1 rounded-full hover:bg-gray-100 text-slate-700 active:bg-gray-200 transition-colors">
-                                    <Icons.ArrowLeft size={22} />
-                                </button>
-                                <span className="font-bold text-sm text-slate-800 uppercase tracking-wide">Shopping Guide</span>
-                                <div className="w-9"></div> 
-                            </div>
-
-                            <div className="flex-grow px-5 py-5 pb-20">
-                                <div className="space-y-6">
-                                    {shoppingGuideData.map((loc, idx) => (
-                                        <div key={idx} className={`rounded-2xl border p-4 shadow-sm ${loc.bg}`}>
-                                            <div className="flex items-center gap-2 mb-3">
-                                                <div className="bg-white p-1.5 rounded-full shadow-sm">{loc.icon}</div>
-                                                <h3 className="font-bold text-slate-800">{loc.location}</h3>
-                                            </div>
-                                            <div className="space-y-3 pl-2">
-                                                {loc.items.map((item, i) => (
-                                                    <div key={i} className="flex justify-between items-start text-sm border-l-2 border-white/50 pl-3">
-                                                        <div>
-                                                            <div className="font-semibold text-slate-700">{item.name}</div>
-                                                            <div className="text-xs text-slate-500">{item.desc}</div>
-                                                        </div>
-                                                        <div className="text-xs font-mono font-bold text-slate-400 bg-white/60 px-1.5 py-0.5 rounded whitespace-nowrap">{item.price}</div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ))}
+                        {/* --- DETAIL VIEW (ITINERARY) --- */}
+                        {view === 'detail' && selectedDay && (
+                            <div className="page-enter px-5 pt-10 pb-5">
+                                <div className="flex items-center justify-between mb-6">
+                                    <button onClick={() => setView('home')} className="p-2 -ml-2 rounded-full hover:bg-gray-200 text-slate-700 transition-colors">
+                                        <Icons.ArrowLeft size={22} />
+                                    </button>
+                                    <div className="text-center">
+                                        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{selectedDay.day}</div>
+                                        <div className="font-bold text-sm text-slate-800">{selectedDay.title}</div>
+                                    </div>
+                                    <div className="w-8"></div>
                                 </div>
-                            </div>
-                        </div>
-                    )}
 
-                    {/* --- DETAIL VIEW --- */}
-                    {view === 'detail' && selectedDay && (
-                        <div className="page-enter flex flex-col min-h-screen bg-slate-50">
-                            
-                            {/* Sticky Nav */}
-                            <div className="sticky top-0 pt-8 pb-3 px-4 flex items-center justify-between bg-white/80 backdrop-blur-md shadow-sm z-30 border-b border-gray-100">
-                                <button onClick={goHome} className="p-2 -ml-1 rounded-full hover:bg-gray-100 text-slate-700 active:bg-gray-200 transition-colors">
-                                    <Icons.ArrowLeft size={22} />
-                                </button>
-                                <div className="text-center">
-                                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{selectedDay.day}</div>
-                                    <div className="font-bold text-sm text-slate-800">{selectedDay.title}</div>
-                                </div>
-                                <div className="w-9"></div> 
-                            </div>
-
-                            <div className="flex-grow px-5 py-5 pb-20">
-                                
                                 {/* Trip Trick Box */}
                                 {selectedDay.trick && (
                                     <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 mb-6 flex items-start gap-3 shadow-sm">
@@ -722,8 +737,113 @@
                                     ))}
                                 </div>
                             </div>
+                        )}
+                    
+                    </div>
+
+                    {/* Bottom Navigation Bar */}
+                    <div className="bg-white border-t border-gray-200 flex justify-around items-center h-16 fixed bottom-0 w-full max-w-md z-40 pb-2 safe-area-bottom">
+                        <button 
+                            onClick={() => { setView('home'); window.scrollTo(0,0); }}
+                            className={`flex flex-col items-center justify-center w-full h-full ${view === 'home' || view === 'detail' || view === 'checklist' ? 'text-indigo-600' : 'text-gray-400'}`}
+                        >
+                            <Icons.Home size={24} strokeWidth={view === 'home' || view === 'detail' || view === 'checklist' ? 2.5 : 2} />
+                            <span className="text-[10px] font-medium mt-1">Home</span>
+                        </button>
+                        <button 
+                            onClick={() => { setView('tools'); window.scrollTo(0,0); }}
+                            className={`flex flex-col items-center justify-center w-full h-full ${view === 'tools' ? 'text-indigo-600' : 'text-gray-400'}`}
+                        >
+                            <Icons.Tool size={24} strokeWidth={view === 'tools' ? 2.5 : 2} />
+                            <span className="text-[10px] font-medium mt-1">Tools</span>
+                        </button>
+                        <button 
+                            onClick={() => { setView('converter'); window.scrollTo(0,0); }}
+                            className={`flex flex-col items-center justify-center w-full h-full ${view === 'converter' ? 'text-indigo-600' : 'text-gray-400'}`}
+                        >
+                            <Icons.Currency size={24} strokeWidth={view === 'converter' ? 2.5 : 2} />
+                            <span className="text-[10px] font-medium mt-1">Converter</span>
+                        </button>
+                    </div>
+
+                    {/* Modals & Popups */}
+
+                    {/* Language Popup Overlay */}
+                    {selectedPhrase && (
+                        <div 
+                            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+                            onClick={() => setSelectedPhrase(null)}
+                        >
+                            <div 
+                                className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl popup-enter relative text-center"
+                                onClick={e => e.stopPropagation()}
+                            >
+                                <button 
+                                    onClick={() => setSelectedPhrase(null)}
+                                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                                >
+                                    <Icons.X size={24} />
+                                </button>
+                                
+                                <div className="mb-6 mt-2">
+                                    <div className="text-sm font-bold text-indigo-500 uppercase tracking-wider mb-1">ENGLISH</div>
+                                    <div className="text-xl font-bold text-slate-800">{selectedPhrase.t}</div>
+                                </div>
+
+                                <div className="bg-indigo-50 rounded-2xl p-4 mb-2">
+                                    <div className="text-sm font-bold text-indigo-400 uppercase tracking-wider mb-2">JAPANESE</div>
+                                    <div className="text-2xl font-bold text-indigo-900 mb-1">{selectedPhrase.k}</div>
+                                    <div className="text-sm text-indigo-600 font-medium">{selectedPhrase.j}</div>
+                                </div>
+                                
+                                <div className="text-xs text-gray-400 mt-4">Tap outside to close</div>
+                            </div>
                         </div>
                     )}
+
+                    {/* Hotel Info Modal */}
+                    {showHotelCard && (
+                        <div 
+                            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+                            onClick={() => setShowHotelCard(false)}
+                        >
+                            <div 
+                                className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl popup-enter relative"
+                                onClick={e => e.stopPropagation()}
+                            >
+                                <button 
+                                    onClick={() => setShowHotelCard(false)}
+                                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                                >
+                                    <Icons.X size={24} />
+                                </button>
+                                
+                                <div className="text-center mb-6">
+                                    <div className="inline-block p-3 bg-indigo-50 text-indigo-600 rounded-full mb-3">
+                                        <Icons.Bed size={32} />
+                                    </div>
+                                    <h3 className="text-lg font-bold text-gray-800">Show to Taxi Driver</h3>
+                                    <p className="text-xs text-gray-500">ยื่นหน้านี้ให้คนขับแท็กซี่ดูได้เลย</p>
+                                </div>
+
+                                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-4 text-center">
+                                    <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-2">DESTINATION</p>
+                                    <div className="text-2xl font-bold text-slate-900 leading-snug mb-1">スイスホテル<br/>南海大阪</div>
+                                    <div className="text-sm text-slate-600 font-medium">Swissôtel Nankai Osaka</div>
+                                    <hr className="my-3 border-slate-200"/>
+                                    <p className="text-xs text-slate-500">〒542-0076 大阪府大阪市中央区難波5-1-60</p>
+                                </div>
+
+                                <button 
+                                    onClick={() => setShowHotelCard(false)}
+                                    className="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl shadow-lg active:scale-95 transition-transform"
+                                >
+                                    Close Card
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                 </div>
             );
         };
